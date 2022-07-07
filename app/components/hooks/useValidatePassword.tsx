@@ -6,7 +6,6 @@ const useValidatePassword = (): [(input: string) => Promise<boolean>] => {
     try {
       const credentials = await SecureKeychain.getGenericPassword();
       if (credentials) {
-        console.log('useValidatePassword', { credentials });
         if (credentials.password === input) {
           return true;
         }

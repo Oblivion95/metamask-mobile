@@ -2079,5 +2079,9 @@
   "download_files": {
     "error": "Failed to download attachment.",
     "unknownError": "Unknown error occurred"
+  },
+  "turn_off_remember_me": {
+   "description": "Type your password to disable \"Remember me\" and then lock MetaMask. You will use your password to unlock MetaMask going forward.",
+   "action": "Turn off remember me"
   }
 }
