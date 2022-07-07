@@ -9,6 +9,11 @@ import { useTheme } from '../../../util/theme';
 import Routes from '../../../constants/navigation/Routes';
 import { createNavigationDetails } from '../../..//util/navigation/navUtils';
 import { doesPasswordMatch } from '../../../util/password';
+import Engine from '../../../core/Engine';
+import { logOut } from '../../../actions/user';
+import { setAllowLoginWithRememberMe } from '../../../actions/security';
+import { useDispatch } from 'react-redux';
+import SecureKeychain from '../../../core/SecureKeychain';
 
 export const createTurnOffRememberMeModalNavDetails = createNavigationDetails(
   Routes.MODAL.ROOT_MODAL_FLOW,
@@ -18,6 +23,7 @@ export const createTurnOffRememberMeModalNavDetails = createNavigationDetails(
 const TurnOffRememberMeModal = () => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
+  const dispatch = useDispatch();
 
   const modalRef = useRef<ReusableModalRef>(null);
 
@@ -40,10 +46,16 @@ const TurnOffRememberMeModal = () => {
   const dismissModal = (cb?: () => void): void =>
     modalRef?.current?.dismissModal(cb);
 
-  const triggerClose = (): void => dismissModal();
+  const turnOffRememberMeAndLockApp = async () => {
+    const { KeyringController } = Engine.context as any;
+    await SecureKeychain.resetGenericPassword();
+    await KeyringController.setLocked();
+    dispatch(setAllowLoginWithRememberMe(false));
+    dispatch(logOut());
+  };
 
   const disableRememberMe = async () => {
-    triggerClose();
+    dismissModal(async () => await turnOffRememberMeAndLockApp());
   };
 
   return (
@@ -53,8 +65,8 @@ const TurnOffRememberMeModal = () => {
         cancelText={strings('turn_off_remember_me.action')}
         cancelButtonDisabled={disableButton}
         onCancelPress={disableRememberMe}
-        onRequestClose={triggerClose}
-        onConfirmPress={triggerClose}
+        onRequestClose={dismissModal}
+        onConfirmPress={dismissModal}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.areYouSure}>
