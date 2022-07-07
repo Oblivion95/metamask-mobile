@@ -8,7 +8,7 @@ import { strings } from '../../../../locales/i18n';
 import { useTheme } from '../../../util/theme';
 import Routes from '../../../constants/navigation/Routes';
 import { createNavigationDetails } from '../../..//util/navigation/navUtils';
-import useValidatePassword from '../../hooks/useValidatePassword';
+import { doesPasswordMatch } from '../../../util/password';
 
 export const createTurnOffRememberMeModalNavDetails = createNavigationDetails(
   Routes.MODAL.ROOT_MODAL_FLOW,
@@ -24,16 +24,18 @@ const TurnOffRememberMeModal = () => {
   const [passwordText, setPasswordText] = useState<string>('');
   const [disableButton, setDisableButton] = useState<boolean>(true);
 
-  const [doesPasswordMatch] = useValidatePassword();
-  const isValidPassword = useCallback(
-    async (text: string) => await doesPasswordMatch(text),
-    [doesPasswordMatch],
-  );
+  const isValidPassword = useCallback(async (text: string) => {
+    const response = await doesPasswordMatch(text);
+    return response.valid;
+  }, []);
 
-  const checkPassword = async (text: string) => {
-    setPasswordText(text);
-    setDisableButton(!(await isValidPassword(text)));
-  };
+  const checkPassword = useCallback(
+    async (text: string) => {
+      setPasswordText(text);
+      setDisableButton(!(await isValidPassword(text)));
+    },
+    [isValidPassword],
+  );
 
   const dismissModal = (cb?: () => void): void =>
     modalRef?.current?.dismissModal(cb);
